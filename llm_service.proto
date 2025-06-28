@@ -2,21 +2,22 @@ syntax = "proto3";
 
 package llm;
 
-service LLMService {
-  rpc Generate (LLMRequest) returns (stream LLMResponse) {}
-}
-
-message LLMRequest {
-  string prompt = 1;
-  string session_id = 2;
-  repeated ChatMessage history = 3;
-}
-
 message ChatMessage {
   string role = 1;
   string content = 2;
 }
 
+message LLMRequest {
+  string prompt = 1;
+  string model = 2;
+  string session_id = 3;
+  repeated ChatMessage history = 4;
+}
+
 message LLMResponse {
-  string chunk = 1;
+  string content = 1;
+}
+
+service LLMService {
+  rpc LLMChat (LLMRequest) returns (stream LLMResponse) {}
 }
