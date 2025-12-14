@@ -6,14 +6,8 @@ message ContentBlock {
 	string mime_type = 1; 
 	oneof data {
 		string text = 2;
-
-		// For Large Files (Video, Audio, PDF) -> PASS BY REFERENCE
-		// Don't send 50MB videos via gRPC directly. Send the S3 path or URL.
-		string file_uri = 3; 
-
-		// For Small Files (Icons, small screenshots) -> PASS BY VALUE
-		// Only for file sizes less than 4MB
-		bytes raw_bytes = 4;
+		string file_uri = 3; // Don't send 50MB videos via gRPC directly. Send the S3 path or URL.
+		//grpc max limit is 4MB, and while that can be increased, it's not recommended 
 	}
 	// For RAG source tracking
 	// e.g., {"page_number": "12", "original_filename": "report.pdf"}
