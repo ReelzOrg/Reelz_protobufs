@@ -35,10 +35,11 @@ message LLMRequest {
 	// if we want to aloow the user to set the system prompt then use the ChatMessage type instead of ContentBlock
 	repeated ContentBlock prompt = 1;
 	string model = 2;
-	string session_id = 3;
-	repeated ChatMessage history = 4;
+	string user_id = 3;
+	string session_id = 4;
+	repeated ChatMessage history = 5;
 
-	LLMConfig config = 5;
+	LLMConfig config = 6;
 }
 
 message LLMResponse {
