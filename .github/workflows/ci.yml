@@ -1,0 +1,148 @@
+name: Proto CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUF_VERSION: "1.64.0" # Pinning versions for stability
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-setup-action@v1
+      - uses: bufbuild/buf-lint-action@v1
+      
+      - uses: bufbuild/buf-breaking-action@v1
+        if: github.event_name == 'pull_request'
+        with:
+          against: "https://github.com/${{ github.repository }}.git#branch=main"
+
+  #FOR WHEN THE CODE GROWS AND WE NEED TO PUBLISH TO PRIVATE REGISTRY ON PYPI OR NPM (make sure to have buf.gen.yaml file)
+  # # ------------------------------------------------------------------
+  # # JOB 1: VALIDATION (Runs on every PR and Push)
+  # # ------------------------------------------------------------------
+  # validate:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Buf
+  #       uses: bufbuild/buf-setup-action@v1
+  #       with:
+  #         version: ${{ env.BUF_VERSION }}
+
+  #     - name: Lint Protos
+  #       run: buf lint
+
+  #     - name: Detect Breaking Changes
+  #       # Only run breaking change detection on PRs, comparing against main
+  #       if: github.event_name == 'pull_request'
+  #       uses: bufbuild/buf-breaking-action@v1
+  #       with:
+  #         against: "https://github.com/${{ github.repository }}.git#branch=main"
+
+  # # ------------------------------------------------------------------
+  # # JOB 2: PUBLISH PYTHON (Runs only on Push to Main)
+  # # ------------------------------------------------------------------
+  # publish-python:
+  #   needs: validate
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     packages: write 
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Buf
+  #       uses: bufbuild/buf-setup-action@v1
+  #       with:
+  #         version: ${{ env.BUF_VERSION }}
+
+  #     - name: Install uv (Fast Python Package Manager)
+  #       uses: astral-sh/setup-uv@v5
+
+  #     - name: Generate Python Code
+  #       run: buf generate
+
+  #     - name: Build Python Package
+  #       working-directory: gen/python
+  #       run: |
+  #         # Create a minimal pyproject.toml dynamically if it doesn't exist
+  #         if [ ! -f pyproject.toml ]; then
+  #           echo '[project]' > pyproject.toml
+  #           echo 'name = "acme-protos"' >> pyproject.toml
+  #           echo 'version = "1.0.${{ github.run_number }}"' >> pyproject.toml
+  #           echo 'dependencies = ["protobuf>=4.0", "grpcio>=1.50"]' >> pyproject.toml
+  #           echo '[build-system]' >> pyproject.toml
+  #           echo 'requires = ["hatchling"]' >> pyproject.toml
+  #           echo 'build-backend = "hatchling.build"' >> pyproject.toml
+  #         fi
+          
+  #         # Build the wheel
+  #         uv build
+
+  #     # - name: Publish to PyPI (or Private Registry)
+  #     #   run: uv publish
+  #     #   env:
+  #     #     # Set these secrets in GitHub Repo Settings
+  #     #     UV_PUBLISH_URL: ${{ secrets.PYPI_REPOSITORY_URL }} 
+  #     #     UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+  # # ------------------------------------------------------------------
+  # # JOB 3: PUBLISH TYPESCRIPT (Runs only on Push to Main)
+  # # ------------------------------------------------------------------
+  # publish-typescript:
+  #   needs: validate
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     packages: write # Required for GITHUB_TOKEN publishing
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Buf
+  #       uses: bufbuild/buf-setup-action@v1
+  #       with:
+  #         version: ${{ env.BUF_VERSION }}
+
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         registry-url: 'https://npm.pkg.github.com'
+
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 8
+
+  #     - name: Generate TypeScript Code
+  #       run: buf generate
+
+  #     - name: Prepare and Publish Package
+  #       working-directory: gen/ts
+  #       run: |
+  #         # Dynamically create package.json for the generated code
+  #         # NOTE: Scope name @ORG must match your GitHub Organization
+  #         npm init -y
+  #         npm pkg set name="@${{ github.repository_owner }}/acme-protos"
+  #         npm pkg set version="1.0.${{ github.run_number }}"
+  #         npm pkg set main="index.js"
+  #         npm pkg set types="index.d.ts"
+          
+  #         # Install dependencies required by the generated code
+  #         pnpm install @bufbuild/protobuf @connectrpc/connect --save-prod
+          
+  #         # Publish to GitHub Packages
+  #         pnpm publish --no-git-checks
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
