@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package lvideo.v1; // Must match directory structure lvideo/v1/
+
+option go_package = "lvideo/v1;lvideov1";
