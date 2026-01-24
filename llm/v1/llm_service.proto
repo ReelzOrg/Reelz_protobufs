@@ -1,22 +1,23 @@
 syntax = "proto3";
 
-package llm.v1;
+package llm.v1; // Must match directory structure llm/v1/
 
 option go_package = "llm/v1;llmv1";
 
 /* =========================== TOP-LEVEL SERVICE =========================== */
 service LLMService {
-  rpc LLMChat(LLMRequest) returns (stream LLMResponse);
+	//Buf enforces a strict convention: rpc MethodName(MethodNameRequest) returns (MethodNameResponse)
+  rpc LLMChat(LLMChatRequest) returns (stream LLMChatResponse);
   
   // NEW: Check if uploaded files are ready for querying
-  rpc CheckFileStatus(FileStatusRequest) returns (FileStatusResponse);
+  rpc CheckFileStatus(CheckFileStatusRequest) returns (CheckFileStatusResponse);
   
   // NEW: Get user's chat history
-  rpc GetChatHistory(ChatHistoryRequest) returns (ChatHistoryResponse);
+  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
 }
 
 /* =========================== REQUEST =========================== */
-message LLMRequest {
+message LLMChatRequest {
   string request_id = 1;
   string user_id = 2;
   string session_id = 3;
@@ -81,7 +82,7 @@ message TimeRange {
 }
 
 /* =========================== STREAMING EVENTS =========================== */
-message LLMResponse {
+message LLMChatResponse {
   string request_id = 1;
   int64 sequence = 2;
   oneof event {
@@ -120,11 +121,11 @@ message FileProcessingStatus {
 
 enum FileStatus {
   FILE_STATUS_UNSPECIFIED = 0;
-  UPLOADING = 1;
-  QUEUED = 2;
-  PROCESSING = 3;
-  READY = 4;
-  FAILED = 5;
+  FILE_STATUS_UPLOADING = 1;
+  FILE_STATUS_QUEUED = 2;
+  FILE_STATUS_PROCESSING = 3;
+  FILE_STATUS_READY = 4;
+  FILE_STATUS_FAILED = 5;
 }
 
 /* =========================== SUMMARY =========================== */
@@ -156,15 +157,15 @@ message StreamStart {
 
 message StreamEnd {
   string timestamp = 1;
-  FinishReason reason = 2;
+  FinishReason finish_reason = 2;
 }
 
 enum FinishReason {
   FINISH_REASON_UNSPECIFIED = 0;
-  COMPLETED = 1;
-  CANCELLED = 2;
-  ERROR = 3;
-  CONTEXT_LENGTH_EXCEEDED = 4;
+  FINISH_REASON_COMPLETED = 1;
+  FINISH_REASON_CANCELLED = 2;
+  FINISH_REASON_ERROR = 3;
+  FINISH_REASON_CONTEXT_LENGTH_EXCEEDED = 4;
 }
 
 /* =========================== MODEL ROUTING =========================== */
@@ -206,11 +207,11 @@ message ArtifactCompleted {
 
 enum ArtifactType {
   ARTIFACT_TYPE_UNSPECIFIED = 0;
-  IMAGE = 1;
-  AUDIO = 2;
-  VIDEO = 3;
-  DOCUMENT = 4;
-  CODE = 5;
+  ARTIFACT_TYPE_IMAGE = 1;
+  ARTIFACT_TYPE_AUDIO = 2;
+  ARTIFACT_TYPE_VIDEO = 3;
+  ARTIFACT_TYPE_DOCUMENT = 4;
+  ARTIFACT_TYPE_CODE = 5;
 }
 
 /* =========================== TOOLS =========================== */
@@ -235,11 +236,11 @@ message Citation {
 }
 
 /* =========================== FILE STATUS CHECK =========================== */
-message FileStatusRequest {
+message CheckFileStatusRequest {
   repeated string file_ids = 1;
 }
 
-message FileStatusResponse {
+message CheckFileStatusResponse {
   repeated FileInfo files = 1;
 }
 
