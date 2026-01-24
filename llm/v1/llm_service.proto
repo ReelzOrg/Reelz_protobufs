@@ -13,7 +13,7 @@ service LLMService {
   rpc CheckFileStatus(CheckFileStatusRequest) returns (CheckFileStatusResponse);
   
   // NEW: Get user's chat history
-  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
+  // rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
 }
 
 /* =========================== REQUEST =========================== */
