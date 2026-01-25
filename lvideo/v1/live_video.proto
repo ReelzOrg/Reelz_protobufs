@@ -3,3 +3,34 @@ syntax = "proto3";
 package lvideo.v1; // Must match directory structure lvideo/v1/
 
 option go_package = "lvideo/v1;lvideov1";
+
+import "buf/validate/validate.proto";
+
+message BroadcastConfig {
+	bool enableHls = 1;
+	bool enableRecording = 2;
+}
+
+message AuthProperties {
+	string secretToken = 1;
+}
+
+message CreateRoomRequest {
+	// Ensure streamId is exactly 36 chars (for UUID) or just non-empty
+	// This validation is not actually required because the grpc will be sent from another service
+	string streamId = 1 [(buf.validate.field).string.min_len = 1];
+	string broadcasterId = 2 [(buf.validate.field).string.min_len = 1];
+
+	// Ensures the 'config' object is actually sent in the request since messages are optional in proto3
+	BroadcastConfig config = 3 [(buf.validate.field).required = true];
+	AuthProperties auth = 4 [(buf.validate.field).required = true];
+}
+
+message CreateRoomResponse {
+	bool success = 1;
+	string message = 2;
+}
+
+service LiveVideo {
+	rpc CreateRoom (CreateRoomRequest) returns (CreateRoomResponse) {}
+}
