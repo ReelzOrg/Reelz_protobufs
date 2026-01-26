@@ -7,28 +7,28 @@ option go_package = "lvideo/v1;lvideov1";
 import "buf/validate/validate.proto";
 
 message BroadcastConfig {
-	bool enableHls = 1;
-	bool enableRecording = 2;
+	bool enable_hls = 1;
+	bool enable_recording = 2;
 }
 
 message AuthProperties {
-	string secretToken = 1;
+	string secret_token = 1;
 }
 
 message CreateRoomRequest {
 	// This validation is not actually required because the grpc will be sent from another service
-	string streamId = 1 [(buf.validate.field).string.uuid = true];
-	string broadcasterId = 2 [(buf.validate.field).string.uuid = true];
+	string stream_id = 1 [(buf.validate.field).string.uuid = true];
+	string broadcaster_id = 2 [(buf.validate.field).string.uuid = true];
 
 	// Ensures the 'config' object is actually sent in the request since messages are optional in proto3
 	BroadcastConfig config = 3 [(buf.validate.field).required = true];
 	AuthProperties auth = 4 [(buf.validate.field).required = true];
 
-	// Custom rule: `streamId` and `broadcasterId` can't be the same.
+	// Custom rule: `stream_id` and `broadcaster_id` can't be the same.
   option (buf.validate.message).cel = {
-    id: "streamId.not.broadcasterId"
-    message: "streamId and broadcasterId should not be the same"
-    expression: "this.streamId != this.broadcasterId"
+    id: "stream_id.not.broadcaster_id"
+    message: "stream_id and broadcaster_id should not be the same"
+    expression: "this.stream_id != this.broadcaster_id"
   };
 }
 
@@ -37,6 +37,6 @@ message CreateRoomResponse {
 	string message = 2;
 }
 
-service LiveVideo {
+service LiveVideoService {
 	rpc CreateRoom (CreateRoomRequest) returns (CreateRoomResponse) {}
 }
