@@ -4,32 +4,17 @@ package lvideo.v1; // Must match directory structure lvideo/v1/
 
 option go_package = "lvideo/v1;lvideov1";
 
-import "buf/validate/validate.proto";
-
 message BroadcastConfig {
 	bool enable_hls = 1;
 	bool enable_recording = 2;
 }
 
-message AuthProperties {
-	string secret_token = 1;
-}
-
 message CreateRoomRequest {
-	// This validation is not actually required because the grpc will be sent from another service
-	string stream_id = 1 [(buf.validate.field).string.uuid = true];
-	string broadcaster_id = 2 [(buf.validate.field).string.uuid = true];
+	string stream_id = 1;
+	string broadcaster_id = 2;
 
-	// Ensures the 'config' object is actually sent in the request since messages are optional in proto3
-	BroadcastConfig config = 3 [(buf.validate.field).required = true];
-	AuthProperties auth = 4 [(buf.validate.field).required = true];
-
-	// Custom rule: `stream_id` and `broadcaster_id` can't be the same.
-  option (buf.validate.message).cel = {
-    id: "stream_id.not.broadcaster_id"
-    message: "stream_id and broadcaster_id should not be the same"
-    expression: "this.stream_id != this.broadcaster_id"
-  };
+	BroadcastConfig config = 3;
+	// tokens will be added in the headers
 }
 
 message CreateRoomResponse {

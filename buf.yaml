@@ -2,7 +2,8 @@ version: v2
 modules:
   - path: .
 deps:
-  - buf.build/bufbuild/protovalidate
+  # Used for timestamp / empty returns / JSON
+  - buf.build/googleapis/googleapis
 breaking:
   use:
     - FILE
